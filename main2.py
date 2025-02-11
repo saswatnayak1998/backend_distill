@@ -6,7 +6,6 @@ import subprocess
 import tarfile
 import uvicorn
 import tempfile
-import requests
 from fastapi import FastAPI, HTTPException
 from fastapi import FastAPI, HTTPException, Query
 from dotenv import load_dotenv
@@ -22,6 +21,7 @@ from typing import List
 
 
 app = FastAPI()
+client = docker.from_env()
 
 
 # Add CORS middleware
@@ -38,25 +38,47 @@ class CodeExecutionRequest(BaseModel):
     code: str
 
 # Function to execute code in the Docker container
-REMOTE_PYTHON_EXECUTOR_URL = "https://railway-python-production.up.railway.app/run"
-
 def execute_code_in_container(language: str, code: str):
+    container_name = "ecstatic_carver"
+    temp_file_path = None
+
     try:
-        # Prepare the request payload
-        payload = {"code": code}
+        # Step 1: Create a temporary file with the code
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".py") as temp_file:
+            temp_file.write(code.encode("utf-8"))
+            temp_file.flush()
+            temp_file_path = temp_file.name
 
-        # Send the code to the remote Python execution service
-        response = requests.post(REMOTE_PYTHON_EXECUTOR_URL, json=payload, timeout=10)
+        # Step 2: Create a tar archive of the file
+        tar_stream = io.BytesIO()
+        with tarfile.open(fileobj=tar_stream, mode="w") as tar:
+            tar.add(temp_file_path, arcname=os.path.basename(temp_file_path))
+        tar_stream.seek(0)
 
-        # Check if the request was successful
-        if response.status_code != 200:
-            raise HTTPException(status_code=response.status_code, detail=f"Execution error: {response.text}")
+        # Step 3: Copy the archive to the container
+        container = docker.from_env().containers.get(container_name)
+        container.put_archive("/tmp", tar_stream)
 
-        # Return the output from the remote container
-        return response.json()
+        # Step 4: Execute the script inside the container
+        script_name = os.path.basename(temp_file_path)
+        command = f"python3 /tmp/{script_name}"
+        exit_code, output = container.exec_run(command, stdout=True, stderr=True)
 
-    except requests.exceptions.RequestException as e:
+        if exit_code != 0:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Execution error: {output.decode('utf-8')}"
+            )
+
+        return {"output": output.decode("utf-8").strip()}
+
+    except docker.errors.NotFound:
+        raise HTTPException(status_code=404, detail=f"Container '{container_name}' not found.")
+    except Exception as e:
         raise HTTPException(status_code=500, detail=f"Internal Server Error: {str(e)}")
+    finally:
+        if temp_file_path and os.path.exists(temp_file_path):
+            os.remove(temp_file_path)
 
 # Endpoint to execute code
 @app.post("/run")
