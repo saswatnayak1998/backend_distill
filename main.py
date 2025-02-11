@@ -25,11 +25,16 @@ app = FastAPI()
 
 
 # Add CORS middleware
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Change this to your frontend URL if necessary
+    allow_origins=[
+        "http://localhost:3000",  # ✅ Local frontend
+        "http://192.168.0.104:3000",  # ✅ Network frontend
+        "https://backenddistill-production.up.railway.app"  # ✅ Backend
+    ],
     allow_credentials=True,
-    allow_methods=["*"],  # Allow all HTTP methods, including OPTIONS
+    allow_methods=["*"],
     allow_headers=["*"],
 )
 
