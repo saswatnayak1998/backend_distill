@@ -86,7 +86,7 @@ class Score(BaseModel):
 LIBSQL_URL = "libsqls://saswat-sash.turso.io"
 load_dotenv()
 LIBSQL_AUTH_TOKEN = os.getenv("LIBSQL_AUTH_TOKEN") 
-conn = libsql.connect("local.db",sync_url=LIBSQL_URL, auth_token=LIBSQL_AUTH_TOKEN)
+conn = libsql.connect(sync_url=LIBSQL_URL, auth_token=LIBSQL_AUTH_TOKEN)
 cursor = conn.cursor()
 
 
