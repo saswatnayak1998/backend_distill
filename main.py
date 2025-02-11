@@ -193,7 +193,7 @@ async def save_logs(request: LogRequest):
 
 @app.post("/check-user")
 def check_user(candidate: Candidate):
-    LIBSQL_URL = "libsqls://saswat-sash.turso.io"
+    LIBSQL_URL = "libsql://saswat-sash.turso.io"
     load_dotenv()
     LIBSQL_AUTH_TOKEN = os.getenv("LIBSQL_AUTH_TOKEN") 
     conn = libsql.connect("saswat",sync_url=LIBSQL_URL, auth_token=LIBSQL_AUTH_TOKEN)
