@@ -78,7 +78,7 @@ class Score(BaseModel):
     question_id: int
     copypastelogs: str
     score: float
-LIBSQL_URL = "libsql://saswat-sash.turso.io"
+LIBSQL_URL = "libsqls://saswat-sash.turso.io"
 load_dotenv()
 LIBSQL_AUTH_TOKEN = os.getenv("LIBSQL_AUTH_TOKEN") 
 conn = libsql.connect("saswat",sync_url=LIBSQL_URL, auth_token=LIBSQL_AUTH_TOKEN)
@@ -506,5 +506,5 @@ print(main({input_data}))  # Ensure function is called properly
 
 # # Start the application when the script is run
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 8000))  # Default to 8000 if PORT isn't set
+    port = int(os.environ.get("PORT", 8080))  # Default to 8000 if PORT isn't set
     uvicorn.run(app, host="0.0.0.0", port=port)
