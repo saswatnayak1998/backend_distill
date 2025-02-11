@@ -193,31 +193,51 @@ async def save_logs(request: LogRequest):
 
 @app.post("/check-user")
 async def check_user(candidate: Candidate):
-    
-    print(candidate.name)
+    print(f"🔍 Checking user: {candidate.name}")
 
-    # Fetch candidate_id and password from the database
-    cursor.execute(
-        "SELECT id, password FROM candidate WHERE name=?;",
-        (candidate.name,)
-    )
+    try:
+        # ✅ Debug: Check if the database connection is working
+        print(f"📡 Connected to DB at: {LIBSQL_URL}")
 
-    result = cursor.fetchone()
+        # ✅ Debug: Check if the candidate table exists
+        cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='candidate';")
+        table_exists = cursor.fetchone()
 
-    if result is None:
-        raise HTTPException(status_code=404, detail="Candidate does not exist.")
+        if not table_exists:
+            print("❌ ERROR: The 'candidate' table does not exist!")
+            raise HTTPException(status_code=500, detail="Database does not have a 'candidate' table. Check migrations.")
 
-    # Extract candidate_id and stored_password from the result
-    candidate_id, stored_password = result
+        print("✅ 'candidate' table exists. Running query...")
 
-    if stored_password != candidate.password:
-        raise HTTPException(status_code=401, detail="Invalid password.")
+        # Fetch candidate_id and password from the database
+        cursor.execute(
+            "SELECT id, password FROM candidate WHERE name=?;",
+            (candidate.name,)
+        )
 
-    # Return success message along with candidate_id
-    return {
-        "message": "Login successful",
-        "candidate_id": candidate_id,  # Include candidate_id in the response
-    }
+        result = cursor.fetchone()
+
+        if result is None:
+            print(f"❌ Candidate '{candidate.name}' does not exist.")
+            raise HTTPException(status_code=404, detail="Candidate does not exist.")
+
+        # Extract candidate_id and stored_password from the result
+        candidate_id, stored_password = result
+
+        if stored_password != candidate.password:
+            print("❌ ERROR: Invalid password")
+            raise HTTPException(status_code=401, detail="Invalid password.")
+
+        print(f"✅ Login successful for {candidate.name} (ID: {candidate_id})")
+        return {
+            "message": "Login successful",
+            "candidate_id": candidate_id,
+        }
+
+    except Exception as e:
+        print(f"❌ Unexpected Error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Internal Server Error: {str(e)}")
+
 
 @app.get("/get-tests")
 async def get_tests():
