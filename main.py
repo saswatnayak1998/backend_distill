@@ -4,9 +4,11 @@ import io
 import json
 import subprocess
 import tarfile
+import uvicorn
 import tempfile
 from fastapi import FastAPI, HTTPException
 from fastapi import FastAPI, HTTPException, Query
+from dotenv import load_dotenv
 
 from typing import List, Optional
 
@@ -99,8 +101,8 @@ class Score(BaseModel):
     copypastelogs: str
     score: float
 LIBSQL_URL = "libsql://saswat-sash.turso.io"
-LIBSQL_AUTH_TOKEN = "eyJhbGciOiJFZERTQSIsInR5cCI6IkpXVCJ9.eyJhIjoicnciLCJpYXQiOjE3Mzg4MTE5NjYsImlkIjoiZTc4Y2U4MTAtNDJmMi00ZjJmLThkNGUtMGZmYTc3ZWUwMTZkIn0.mjEK0xJYFc-todSZyze1rrtKRRli9qOXvqRjIAhSpFoKA2Lt2Uva_hz40PSmXleoQaw2deJRxJRC7YaOBCOvCQ"
-
+load_dotenv()
+LIBSQL_AUTH_TOKEN = os.getenv("LIBSQL_AUTH_TOKEN") 
 conn = libsql.connect("saswat",sync_url=LIBSQL_URL, auth_token=LIBSQL_AUTH_TOKEN)
 cursor = conn.cursor()
 
