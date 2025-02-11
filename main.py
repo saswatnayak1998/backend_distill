@@ -475,7 +475,7 @@ print(main({input_data}))  # Ensure function is called properly
         return "Language not supported"
 
 
-# Start the application when the script is run
-if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 8081))  # Use PORT env variable
-    uvicorn.run(app, host="0.0.0.0", port=port)
+# # Start the application when the script is run
+# if __name__ == "__main__":
+#     port = int(os.environ.get("PORT", 8081))  # Use PORT env variable
+#     uvicorn.run(app, host="0.0.0.0", port=port)
