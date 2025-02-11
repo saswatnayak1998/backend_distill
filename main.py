@@ -196,10 +196,18 @@ async def check_user(candidate: Candidate):
     print(f"🔍 Checking user: {candidate.name}")
 
     try:
-        # ✅ Debug: Check if the database connection is working
+        # ✅ Debug: Print DB connection info
         print(f"📡 Connected to DB at: {LIBSQL_URL}")
 
-        # ✅ Debug: Check if the candidate table exists
+        # ✅ Debug: List all tables in the database
+        cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
+        tables = cursor.fetchall()
+
+        print("📋 All tables in the database:")
+        for table in tables:
+            print(f"  - {table[0]}")  # Print table names
+
+        # ✅ Debug: Check if 'candidate' table exists
         cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='candidate';")
         table_exists = cursor.fetchone()
 
@@ -237,6 +245,7 @@ async def check_user(candidate: Candidate):
     except Exception as e:
         print(f"❌ Unexpected Error: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Internal Server Error: {str(e)}")
+
 
 
 @app.get("/get-tests")
