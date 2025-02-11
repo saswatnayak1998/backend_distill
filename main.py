@@ -192,11 +192,8 @@ async def save_logs(request: LogRequest):
 
 
 @app.post("/check-user")
-
 async def check_user(candidate: Candidate):
-    LIBSQL_AUTH_TOKEN = os.getenv("LIBSQL_AUTH_TOKEN") 
-    conn = libsql.connect("saswat",sync_url=LIBSQL_URL, auth_token=LIBSQL_AUTH_TOKEN)
-    cursor = conn.cursor()
+    
     print(candidate.name)
 
     # Fetch candidate_id and password from the database
@@ -480,5 +477,5 @@ print(main({input_data}))  # Ensure function is called properly
 
 # Start the application when the script is run
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 8080))  # Use PORT env variable
+    port = int(os.environ.get("PORT", 8081))  # Use PORT env variable
     uvicorn.run(app, host="0.0.0.0", port=port)
